@@ -47,3 +47,13 @@ async def update_avatar_url(email: str, url: str | None, db: AsyncSession) -> Us
     await db.commit()
     await db.refresh(user)
     return user
+
+
+async def update_password(user: User, hashed_password: str, db: AsyncSession) -> None:
+    """
+    Оновлює пароль користувача в базі даних.
+    """
+    user.password = hashed_password  # Оновлюємо поле пароля
+    db.add(user)  # Додаємо користувача в сесію для оновлення
+    await db.commit()  # Фіксуємо зміни в базі
+    await db.refresh(user)  # Оновлюємо об'єкт користувача після змін

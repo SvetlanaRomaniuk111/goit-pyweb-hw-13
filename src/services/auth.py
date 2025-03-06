@@ -13,6 +13,7 @@ from jose import JWTError, jwt
 from src.database.db import get_db
 from src.repository import users as repositories_users
 from src.conf.config import config
+from src.repository.users import update_password
 
 
 class Auth:
@@ -141,6 +142,19 @@ class Auth:
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Invalid token for email verification",
             )
+
+    async def update_password(self, email: str, new_password: str, db: AsyncSession):
+        """
+        Оновлення паролю користувача в базі даних.
+        """
+        user = await repositories_users.get_user_by_email(email, db)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
+
+        hashed_password = self.get_password_hash(new_password)
+        await repositories_users.update_password(user, hashed_password, db)
 
 
 auth_service = Auth()
